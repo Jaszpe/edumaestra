@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6fa5">
+  <meta name="description" content="EduMaestra — gestión de educación inicial: 3, 4 y 5 años">
+  <title>EduMaestra 🌸 | Educación Inicial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Decoración de fondo -->
+<div class="bg-decor" aria-hidden="true">
+  <span class="blob b1">🌸</span>
+  <span class="blob b2">⭐</span>
+  <span class="blob b3">🎈</span>
+  <span class="blob b4">🌈</span>
+  <span class="blob b5">☁️</span>
+  <span class="blob b6">🧸</span>
+  <span class="blob b7">💖</span>
+  <span class="blob b8">✨</span>
+</div>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<section id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">🎓</div>
+    <h1 class="login-title">EduMaestra</h1>
+    <p class="login-tagline">Educación Inicial · 3, 4 y 5 años 🌸</p>
+
+    <div class="login-tabs">
+      <button class="login-tab active" data-role="teacher">👩‍🏫 Maestra</button>
+      <button class="login-tab" data-role="parent">👨‍👩‍👧 Familia</button>
+    </div>
+
+    <!-- Maestra -->
+    <form id="teacherForm" class="login-form">
+      <label class="fld">
+        <span>Usuario</span>
+        <input id="teacherUser" autocomplete="username" placeholder="JARET AMPARO">
+      </label>
+      <label class="fld">
+        <span>Contraseña</span>
+        <input id="teacherPass" type="password" autocomplete="current-password" placeholder="••••••••">
+      </label>
+      <p class="login-error" id="teacherError"></p>
+      <button type="submit" class="primary-btn big w100">Entrar 🌸</button>
+      <p class="login-hint">Demo: <strong>JARET AMPARO</strong> · <strong>jaret123</strong></p>
+    </form>
+
+    <!-- Familia -->
+    <div id="parentAuth" class="hidden">
+      <form id="parentLoginForm" class="login-form">
+        <label class="fld"><span>Correo electrónico</span>
+          <input id="pLoginEmail" type="email" autocomplete="email" placeholder="mama@correo.com">
+        </label>
+        <label class="fld"><span>Contraseña</span>
+          <input id="pLoginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+        </label>
+        <p class="login-error" id="parentLoginError"></p>
+        <button type="submit" class="primary-btn big w100">Ingresar 💖</button>
+        <button type="button" id="showRegister" class="link-btn">¿No tienes cuenta? Regístrate aquí</button>
+      </form>
+
+      <form id="parentRegisterForm" class="login-form hidden">
+        <label class="fld"><span>Tu nombre completo</span>
+          <input id="regName" placeholder="Ej. Rosa Quispe">
+        </label>
+        <label class="fld"><span>Correo electrónico</span>
+          <input id="regEmail" type="email" placeholder="mama@correo.com">
+        </label>
+        <label class="fld"><span>Contraseña</span>
+          <input id="regPass" type="password" placeholder="Mínimo 4 caracteres">
+        </label>
+        <label class="fld"><span>Salón de tu hijo/a</span>
+          <select id="regClassroom">
+            <option value="">Elige un salón…</option>
+            <option value="3 años">3 años</option>
+            <option value="4 años">4 años</option>
+            <option value="5 años">5 años</option>
+          </select>
+        </label>
+        <label class="fld"><span>Buscar a mi hijo/a</span>
+          <input id="regChildSearch" placeholder="Escribe el nombre…">
+        </label>
+        <label class="fld"><span>Estudiante</span>
+          <select id="regChild"><option value="">Primero elige el salón</option></select>
+        </label>
+        <p class="login-error" id="parentRegError"></p>
+        <button type="submit" class="primary-btn big w100">Crear cuenta 🌷</button>
+        <button type="button" id="showLogin" class="link-btn">Ya tengo cuenta</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PANEL MAESTRA ══════════════ -->
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div><strong>EduMaestra</strong><small>Educación Inicial</small></div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-section="inicio">🏠 <span>Inicio</span></button>
+      <button class="nav-item" data-section="estudiantes">👩‍🎓 <span>Estudiantes</span></button>
+      <button class="nav-item" data-section="asistencia">📋 <span>Asistencia</span></button>
+      <button class="nav-item" data-section="evaluaciones">📝 <span>Evaluaciones</span></button>
+      <button class="nav-item" data-section="incidencias">⚠️ <span>Incidencias</span></button>
+      <button class="nav-item" data-section="reportes">📊 <span>Reportes</span></button>
+      <button class="nav-item" data-section="configuracion">⚙️ <span>Configuración</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="teacher-chip">
+        <span>👩‍🏫</span>
+        <div><strong id="teacherChipName">Jaret Amparo</strong><small id="schoolChipName">Docente</small></div>
+      </div>
+      <button id="exportBackup" class="secondary-btn">💾 Respaldar datos</button>
+      <label class="secondary-btn file-btn">📂 Restaurar<input type="file" id="importBackup" accept=".json" hidden></label>
+      <button id="logoutTeacher" class="secondary-btn ghost">🚪 Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="menuToggle" class="icon-btn" aria-label="Abrir menú">☰</button>
+      <div>
+        <h1 id="pageTitle">Inicio</h1>
+        <p id="pageSubtitle">Resumen de tu gestión educativa</p>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span class="date-pill" id="today"></span>
+    </header>
+
+    <div class="content">
+
+      <!-- INICIO -->
+      <section id="inicio" class="page-section active">
+        <div class="welcome-card">
+          <div class="welcome-text">
+            <span class="eyebrow">¡Bienvenida!</span>
+            <h2 id="welcomeTitle">Hola, maestra Jaret 👋</h2>
+            <p id="welcomeSubtitle">Tus tres salones te esperan: 3, 4 y 5 añitos.</p>
+          </div>
+          <div class="welcome-emoji">🌸</div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card c-pink"><span>👩‍🎓</span><div><small>Estudiantes</small><strong id="statStudents">0</strong></div></article>
+          <article class="stat-card c-mint"><span>📋</span><div><small>Asistencias</small><strong id="statAttendance">0</strong></div></article>
+          <article class="stat-card c-lav"><span>📝</span><div><small>Evaluaciones</small><strong id="statEvaluations">0</strong></div></article>
+          <article class="stat-card c-sun"><span>⚠️</span><div><small>Incidencias</small><strong id="statIncidents">0</strong></div></article>
+        </div>
+
+        <div class="rooms-grid" id="roomsGrid"></div>
+
+        <div class="two-columns">
+          <article class="panel">
+            <div class="panel-header"><h3>⚡ Accesos rápidos</h3></div>
+            <div class="quick-actions">
+              <button data-go="estudiantes">👩‍🎓 Gestionar estudiantes</button>
+              <button data-go="asistencia">📋 Pasar asistencia</button>
+              <button data-go="evaluaciones">📝 Registrar evaluación</button>
+              <button data-go="reportes">📊 Ver reportes</button>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><h3>💖 Resumen de hoy</h3></div>
+            <div id="homeSummary" class="empty-state">Cargando…</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ESTUDIANTES -->
+      <section id="estudiantes" class="page-section">
+        <div class="section-actions">
+          <div class="search-box">🔍 <input id="studentSearch" placeholder="Buscar estudiante..."></div>
+          <button id="newStudentBtn" class="primary-btn">+ Nuevo estudiante</button>
+        </div>
+        <div class="chips" id="studentChips">
+          <button class="chip active" data-room="Todos">Todos</button>
+          <button class="chip" data-room="3 años">3 años</button>
+          <button class="chip" data-room="4 años">4 años</button>
+          <button class="chip" data-room="5 años">5 años</button>
+        </div>
+        <article class="panel">
+          <div class="panel-header"><h3>Lista de estudiantes</h3><span id="studentCount" class="muted"></span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>Nombre</th><th>Aula</th><th>Nacimiento</th><th>Apoderado</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+              <tbody id="studentsTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- ASISTENCIA -->
+      <section id="asistencia" class="page-section">
+        <div class="section-actions wrap">
+          <div><label class="field-label">Salón</label>
+            <select id="attendanceClass">
+              <option>3 años</option><option>4 años</option><option>5 años</option>
+            </select>
+          </div>
+          <div><label class="field-label">Fecha</label><input type="date" id="attendanceDate"></div>
+          <button id="saveAttendance" class="primary-btn">💾 Guardar asistencia</button>
+        </div>
+        <article class="panel">
+          <div class="panel-header"><h3>Registro diario</h3><span id="attendanceCount" class="muted"></span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Estudiante</th><th>Estado</th></tr></thead>
+              <tbody id="attendanceTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- EVALUACIONES -->
+      <section id="evaluaciones" class="page-section">
+        <div class="section-actions">
+          <div class="chips" id="evalChips">
+            <button class="chip active" data-room="Todos">Todos</button>
+            <button class="chip" data-room="3 años">3 años</button>
+            <button class="chip" data-room="4 años">4 años</button>
+            <button class="chip" data-room="5 años">5 años</button>
+          </div>
+          <button id="newEvaluationBtn" class="primary-btn">+ Nueva evaluación</button>
+        </div>
+        <article class="panel">
+          <div class="panel-header"><h3>Evaluaciones registradas</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Estudiante</th><th>Área</th><th>Criterio</th><th>Nivel</th></tr></thead>
+              <tbody id="evaluationsTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- INCIDENCIAS -->
+      <section id="incidencias" class="page-section">
+        <div class="section-actions"><button id="newIncidentBtn" class="primary-btn">+ Nueva incidencia</button></div>
+        <article class="panel">
+          <div class="panel-header"><h3>Registro de incidencias</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Estudiante</th><th>Tipo</th><th>Descripción</th></tr></thead>
+              <tbody id="incidentsTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- REPORTES -->
+      <section id="reportes" class="page-section">
+        <div class="stats-grid">
+          <article class="stat-card c-mint"><span>🟢</span><div><small>Presentes</small><strong id="reportPresent">0</strong></div></article>
+          <article class="stat-card c-pink"><span>🔴</span><div><small>Ausentes</small><strong id="reportAbsent">0</strong></div></article>
+          <article class="stat-card c-sun"><span>🟡</span><div><small>Tardanzas</small><strong id="reportLate">0</strong></div></article>
+          <article class="stat-card c-lav"><span>📈</span><div><small>% Asistencia</small><strong id="reportRate">0%</strong></div></article>
+        </div>
+        <article class="panel">
+          <div class="panel-header"><h3>Exportación</h3></div>
+          <p class="muted">Descarga la información de tus estudiantes y respalda todo tu trabajo.</p>
+          <div class="quick-actions">
+            <button id="exportStudentsCsv">📊 Exportar estudiantes CSV</button>
+            <button id="exportBackup2">💾 Exportar respaldo JSON</button>
+            <button id="printReport">🖨️ Imprimir reporte</button>
+            <button id="exportEvaluationsCsv">📝 Exportar evaluaciones CSV</button>
+          </div>
+        </article>
+      </section>
+
+      <!-- CONFIGURACIÓN -->
+      <section id="configuracion" class="page-section">
+        <article class="panel">
+          <div class="panel-header"><h3>⚙️ Configuración</h3></div>
+          <div class="form-grid">
+            <label>Nombre de la maestra<input id="teacherName" placeholder="Ej. Jaret Amparo"></label>
+            <label>Nombre del centro educativo<input id="schoolName" placeholder="Ej. I.E. Los Pequeños"></label>
+            <label>Color principal<input id="accentColor" type="color" value="#ff6fa5"></label>
+          </div>
+          <button id="saveSettings" class="primary-btn">Guardar configuración</button>
+          <hr>
+          <div class="quick-actions">
+            <button id="regenDemo" class="secondary-outline-btn">🎲 Regenerar alumnos de demostración</button>
+            <button id="clearData" class="danger-btn">🗑️ Eliminar todos los datos locales</button>
+          </div>
+        </article>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════ PORTAL FAMILIA ══════════════ -->
+<section id="screen-parent" class="screen">
+  <header class="parent-topbar">
+    <div class="p-brand"><span>🎓</span><strong>EduMaestra</strong></div>
+    <div class="p-spacer"></div>
+    <span class="p-child-pill" id="pChildPill"></span>
+    <button id="logoutParent" class="ghost-btn">Salir</button>
+  </header>
+
+  <nav class="parent-tabs">
+    <button class="ptab active" data-ptab="inicio">🏠 Inicio</button>
+    <button class="ptab" data-ptab="notas">📝 Notas</button>
+    <button class="ptab" data-ptab="asistencia">📋 Asistencia</button>
+    <button class="ptab" data-ptab="reportes">📊 Reportes</button>
+  </nav>
+
+  <div class="parent-content">
+
+    <!-- INICIO -->
+    <section id="p-inicio" class="p-section active">
+      <!-- EDUNOTICIAS -->
+      <div class="news-box" id="newsBox">
+        <div class="news-head">
+          <h3>📰 EDUNOTICIAS</h3>
+          <button id="closeNews" class="news-close" aria-label="Cerrar noticias">×</button>
+        </div>
+        <div class="news-track">
+          <figure class="news-item n1"><img src="img/1.jpg" alt="Noticia 1" data-fallback="img/1.png" onerror="newsError(this)"><span class="news-fallback">🌸</span></figure>
+          <figure class="news-item n2"><img src="img/2.jpg" alt="Noticia 2" data-fallback="img/2.png" onerror="newsError(this)"><span class="news-fallback">🎨</span></figure>
+          <figure class="news-item n3"><img src="img/3.jpg" alt="Noticia 3" data-fallback="img/3.png" onerror="newsError(this)"><span class="news-fallback">🎈</span></figure>
+          <figure class="news-item n4"><img src="img/4.jpg" alt="Noticia 4" data-fallback="img/4.png" onerror="newsError(this)"><span class="news-fallback">🌈</span></figure>
+        </div>
+        <p class="news-hint">Desliza para ver más ➡️</p>
+      </div>
+      <button id="reopenNews" class="ghost-btn small hidden">📰 Ver EDUNOTICIAS</button>
+
+      <div class="child-hero" id="childHero"></div>
+
+      <div class="stats-grid">
+        <article class="stat-card c-mint"><span>✅</span><div><small>Asistencia</small><strong id="pRate">0%</strong></div></article>
+        <article class="stat-card c-lav"><span>📝</span><div><small>Evaluaciones</small><strong id="pEvals">0</strong></div></article>
+        <article class="stat-card c-sun"><span>🏅</span><div><small>Nivel frecuente</small><strong id="pLevel">—</strong></div></article>
+        <article class="stat-card c-pink"><span>⚠️</span><div><small>Incidencias</small><strong id="pIncidents">0</strong></div></article>
+      </div>
+
+      <article class="panel">
+        <div class="panel-header"><h3>🌟 Últimas evaluaciones</h3></div>
+        <div id="pLatestEvals" class="mini-list"></div>
+      </article>
+    </section>
+
+    <!-- NOTAS -->
+    <section id="p-notas" class="p-section">
+      <article class="panel">
+        <div class="panel-header"><h3>📝 Notas de mi hijo/a</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Área</th><th>Criterio</th><th>Nivel</th></tr></thead>
+            <tbody id="pEvalTable"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- ASISTENCIA -->
+    <section id="p-asistencia" class="p-section">
+      <div class="stats-grid">
+        <article class="stat-card c-mint"><span>🟢</span><div><small>Presentes</small><strong id="pPresent">0</strong></div></article>
+        <article class="stat-card c-pink"><span>🔴</span><div><small>Ausentes</small><strong id="pAbsent">0</strong></div></article>
+        <article class="stat-card c-sun"><span>🟡</span><div><small>Tardanzas</small><strong id="pLate">0</strong></div></article>
+        <article class="stat-card c-lav"><span>📅</span><div><small>Justificados</small><strong id="pJust">0</strong></div></article>
+      </div>
+      <article class="panel">
+        <div class="panel-header"><h3>📋 Historial de asistencia</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody id="pAttTable"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- REPORTES -->
+    <section id="p-reportes" class="p-section">
+      <article class="panel">
+        <div class="panel-header"><h3>📊 Distribución de niveles</h3></div>
+        <div id="pLevelBars" class="bars"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-header"><h3>📈 Resumen de asistencia</h3></div>
+        <div id="pAttBars" class="bars"></div>
+        <hr>
+        <button id="printParentReport" class="primary-btn">🖨️ Imprimir reporte</button>
+      </article>
+    </section>
+
+  </div>
+</section>
+
+<!-- Modal y toast -->
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <button id="closeModal" class="modal-close">×</button>
+    <h3 id="modalTitle">Formulario</h3>
+    <form id="modalForm"></form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/parent.js"></script>
+</body>
+</html>
