@@ -10,8 +10,7 @@ const sectionInfo = {
   configuracion: ["Configuración", "Personaliza EduMaestra"]
 };
 
-let studentFilter = "Todos";
-let evalFilter = "Todos";
+let classroomFilter = "Todos";
 let currentSection = "inicio";
 
 /* ── Utilidades UI ── */
@@ -61,6 +60,24 @@ function goTo(section) {
   renderAll();
 }
 
+function filteredStudents() {
+  return db.students.filter(s => classroomFilter === "Todos" || s.classroom === classroomFilter);
+}
+
+function syncClassroomControls() {
+  $$("#studentChips .chip, #evalChips .chip").forEach(chip => {
+    chip.classList.toggle("active", chip.dataset.room === classroomFilter);
+  });
+  const attendanceClass = $("#attendanceClass");
+  if (attendanceClass && attendanceClass.value !== classroomFilter) attendanceClass.value = classroomFilter;
+}
+
+function setClassroomFilter(room) {
+  classroomFilter = room || "Todos";
+  syncClassroomControls();
+  renderAll();
+}
+
 /* ── Modal ── */
 function openModal(title, html, onSubmit) {
   $("#modalTitle").textContent = title;
@@ -88,8 +105,7 @@ function closeModal() {
 /* ── Estudiantes ── */
 function renderStudents() {
   const query = ($("#studentSearch").value || "").toLowerCase().trim();
-  const list = db.students
-    .filter(s => studentFilter === "Todos" || s.classroom === studentFilter)
+  const list = filteredStudents()
     .filter(s => `${s.firstName} ${s.lastName}`.toLowerCase().includes(query));
 
   $("#studentCount").textContent = `${list.length} estudiante(s)`;
@@ -112,13 +128,15 @@ function renderStudents() {
 }
 
 function studentFormHTML(student = {}) {
+  const minBirthDate = minBirthDateForMaxAge(6);
+  const maxBirthDate = dateForAge(2);
   return `
     <label class="modal-form-field">Nombres<input name="firstName" value="${escapeHTML(student.firstName || "")}" required></label>
     <label class="modal-form-field">Apellidos<input name="lastName" value="${escapeHTML(student.lastName || "")}" required></label>
     <label class="modal-form-field">Salón
       <select name="classroom">${CLASSROOMS.map(c => `<option ${student.classroom === c ? "selected" : ""}>${c}</option>`).join("")}</select>
     </label>
-    <label class="modal-form-field">Fecha de nacimiento<input name="birthDate" type="date" value="${escapeHTML(student.birthDate || "")}"></label>
+    <label class="modal-form-field">Fecha de nacimiento<input name="birthDate" type="date" min="${minBirthDate}" max="${maxBirthDate}" value="${escapeHTML(student.birthDate || "")}" required></label>
     <label class="modal-form-field">Padre / apoderado<input name="guardian" value="${escapeHTML(student.guardian || "")}"></label>
     <label class="modal-form-field">Teléfono<input name="phone" inputmode="tel" value="${escapeHTML(student.phone || "")}"></label>
     <label class="modal-form-field">Género
@@ -150,6 +168,10 @@ function studentPayloadFromForm(form, existing = {}) {
 
 function addStudent() {
   openModal("Nuevo estudiante 👧", studentFormHTML(), form => {
+    if (!isAgeInRange(form.get("birthDate"), 2, 6)) {
+      showToast("Edad inválida: el estudiante debe tener entre 2 y 6 años.");
+      return;
+    }
     db.students.push({
       id: uid(),
       ...studentPayloadFromForm(form)
@@ -163,6 +185,10 @@ function editStudent(id) {
   if (index < 0) return;
   const student = db.students[index];
   openModal("Editar estudiante ✏️", studentFormHTML(student), form => {
+    if (!isAgeInRange(form.get("birthDate"), 2, 6)) {
+      showToast("Edad inválida: el estudiante debe tener entre 2 y 6 años.");
+      return;
+    }
     db.students[index] = studentPayloadFromForm(form, student);
     saveData(); closeModal(); renderAll(); showToast("Datos del estudiante actualizados.");
   });
@@ -172,8 +198,10 @@ function editStudent(id) {
 function renderAttendance() {
   const date = $("#attendanceDate").value || todayISO();
   $("#attendanceDate").value = date;
-  const room = $("#attendanceClass").value;
-  const students = db.students.filter(s => s.classroom === room);
+  const room = $("#attendanceClass").value || classroomFilter;
+  classroomFilter = room;
+  syncClassroomControls();
+  const students = filteredStudents();
 
   $("#attendanceCount").textContent = `${students.length} estudiantes · ${room}`;
 
@@ -212,9 +240,9 @@ function saveAttendance() {
 function renderEvaluations() {
   const list = db.evaluations
     .filter(e => {
-      if (evalFilter === "Todos") return true;
+      if (classroomFilter === "Todos") return true;
       const s = studentById(e.studentId);
-      return s && s.classroom === evalFilter;
+      return s && s.classroom === classroomFilter;
     })
     .slice()
     .reverse()
@@ -268,7 +296,12 @@ function addEvaluation() {
 
 /* ── Incidencias ── */
 function renderIncidents() {
-  const list = db.incidents.slice().reverse().slice(0, 100);
+  const studentIds = new Set(filteredStudents().map(s => s.id));
+  const list = db.incidents
+    .filter(i => classroomFilter === "Todos" || studentIds.has(i.studentId))
+    .slice()
+    .reverse()
+    .slice(0, 100);
   $("#incidentsTable").innerHTML = list.length
     ? list.map(i => `
       <tr>
@@ -324,10 +357,18 @@ function renderDashboard() {
   $("#welcomeTitle").textContent = `Hola, maestra ${firstName} 👋`;
   $("#welcomeSubtitle").textContent = `${schoolName} · salas de 3, 4 y 5 años.`;
 
-  animateNumber($("#statStudents"), db.students.length);
-  animateNumber($("#statAttendance"), db.attendance.length);
-  animateNumber($("#statEvaluations"), db.evaluations.length);
-  animateNumber($("#statIncidents"), db.incidents.length);
+  const students = filteredStudents();
+  const studentIds = new Set(students.map(s => s.id));
+  const attendance = db.attendance.filter(a => classroomFilter === "Todos" || studentIds.has(a.studentId));
+  const evaluations = db.evaluations.filter(e => classroomFilter === "Todos" || studentIds.has(e.studentId));
+  const incidents = db.incidents.filter(i => classroomFilter === "Todos" || studentIds.has(i.studentId));
+  const families = db.parents.filter(p => classroomFilter === "Todos" || studentIds.has(p.childId));
+  const scopeLabel = classroomFilter === "Todos" ? "3 salones de inicial" : `salón de ${classroomFilter}`;
+
+  animateNumber($("#statStudents"), students.length);
+  animateNumber($("#statAttendance"), attendance.length);
+  animateNumber($("#statEvaluations"), evaluations.length);
+  animateNumber($("#statIncidents"), incidents.length);
 
   $("#today").textContent = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium" }).format(new Date());
 
@@ -344,18 +385,18 @@ function renderDashboard() {
   }).join("");
 
   /* Resumen */
-  const present = db.attendance.filter(a => a.status === "Presente").length;
-  const absent = db.attendance.filter(a => a.status === "Ausente").length;
-  const late = db.attendance.filter(a => a.status === "Tardanza").length;
-  const total = db.attendance.length || 1;
+  const present = attendance.filter(a => a.status === "Presente").length;
+  const absent = attendance.filter(a => a.status === "Ausente").length;
+  const late = attendance.filter(a => a.status === "Tardanza").length;
+  const total = attendance.length || 1;
   const rate = Math.round(((present + late) / total) * 100);
 
-  $("#homeSummary").innerHTML = db.students.length
+  $("#homeSummary").innerHTML = students.length
     ? `<div class="mini-list">
-        <div class="mini-item"><span class="mi-emoji">👩‍🎓</span><div class="mi-body"><strong>${db.students.length} estudiantes</strong><small>en 3 salones de inicial</small></div></div>
+        <div class="mini-item"><span class="mi-emoji">👩‍🎓</span><div class="mi-body"><strong>${students.length} estudiantes</strong><small>en ${scopeLabel}</small></div></div>
         <div class="mini-item"><span class="mi-emoji">✅</span><div class="mi-body"><strong>${rate}% de asistencia</strong><small>${present} presentes · ${late} tardanzas · ${absent} ausencias</small></div></div>
-        <div class="mini-item"><span class="mi-emoji">📝</span><div class="mi-body"><strong>${db.evaluations.length} evaluaciones</strong><small>registradas en total</small></div></div>
-        <div class="mini-item"><span class="mi-emoji">👨‍👩‍👧</span><div class="mi-body"><strong>${db.parents.length} familias</strong><small>con cuenta en el portal</small></div></div>
+        <div class="mini-item"><span class="mi-emoji">📝</span><div class="mi-body"><strong>${evaluations.length} evaluaciones</strong><small>registradas en total</small></div></div>
+        <div class="mini-item"><span class="mi-emoji">👨‍👩‍👧</span><div class="mi-body"><strong>${families.length} familias</strong><small>con cuenta en el portal</small></div></div>
       </div>`
     : `<div class="empty-state">Empieza registrando tu primer estudiante 🌸</div>`;
 
@@ -374,6 +415,7 @@ function renderSettings() {
 }
 
 function renderAll() {
+  syncClassroomControls();
   renderDashboard();
   renderStudents();
   renderAttendance();
@@ -429,24 +471,19 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#studentChips").addEventListener("click", e => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
-    studentFilter = chip.dataset.room;
-    $$("#studentChips .chip").forEach(c => c.classList.toggle("active", c === chip));
-    renderStudents();
+    setClassroomFilter(chip.dataset.room);
   });
 
   $("#evalChips").addEventListener("click", e => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
-    evalFilter = chip.dataset.room;
-    $$("#evalChips .chip").forEach(c => c.classList.toggle("active", c === chip));
-    renderEvaluations();
+    setClassroomFilter(chip.dataset.room);
   });
 
   $("#roomsGrid").addEventListener("click", e => {
     const card = e.target.closest("[data-room-card]");
     if (!card) return;
-    studentFilter = card.dataset.roomCard;
-    $$("#studentChips .chip").forEach(c => c.classList.toggle("active", c.dataset.room === studentFilter));
+    setClassroomFilter(card.dataset.roomCard);
     goTo("estudiantes");
   });
 
@@ -475,7 +512,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Asistencia */
   $("#attendanceDate").value = todayISO();
   $("#attendanceDate").onchange = renderAttendance;
-  $("#attendanceClass").onchange = renderAttendance;
+  $("#attendanceClass").onchange = () => setClassroomFilter($("#attendanceClass").value);
   $("#saveAttendance").onclick = saveAttendance;
 
   /* Evaluaciones e incidencias */

@@ -77,18 +77,20 @@ function handleParentRegister(e) {
   e.preventDefault();
   const error = $("#parentRegError");
   const name = $("#regName").value.trim();
+  const birthDate = $("#regBirthDate").value;
   const email = $("#regEmail").value.trim().toLowerCase();
   const pass = $("#regPass").value;
   const childId = $("#regChild").value;
 
-  if (!name || !email || !pass) { error.textContent = "Completa todos los campos."; return; }
+  if (!name || !birthDate || !email || !pass) { error.textContent = "Completa todos los campos."; return; }
+  if (!isAgeInRange(birthDate, 0, 100)) { error.textContent = "Edad inválida."; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = "El correo no es válido."; return; }
   if (pass.length < 4) { error.textContent = "La contraseña debe tener al menos 4 caracteres."; return; }
   if (!childId) { error.textContent = "Selecciona a tu hijo/a."; return; }
   if (db.parents.some(p => p.email === email)) { error.textContent = "Ese correo ya está registrado."; return; }
   if (db.parents.some(p => p.childId === childId)) { error.textContent = "Ese estudiante ya tiene una cuenta de familia."; return; }
 
-  const parent = { id: uid(), name, email, password: pass, childId, createdAt: todayISO() };
+  const parent = { id: uid(), name, birthDate, email, password: pass, childId, createdAt: todayISO() };
   db.parents.push(parent);
   saveData();
 
@@ -120,6 +122,9 @@ function handleParentLogin(e) {
 
 /* ── Arranque ── */
 document.addEventListener("DOMContentLoaded", () => {
+  $("#regBirthDate").min = minBirthDateForMaxAge(100);
+  $("#regBirthDate").max = todayISO();
+
   /* Tabs del login */
   $$(".login-tab").forEach(tab => {
     tab.addEventListener("click", () => {

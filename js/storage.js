@@ -68,6 +68,37 @@ function formatDate(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function addYears(date, years) {
+  const copy = new Date(date);
+  copy.setFullYear(copy.getFullYear() + years);
+  return copy;
+}
+
+function ageFromBirthDate(iso, reference = new Date()) {
+  if (!iso) return null;
+  const birth = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(birth.getTime()) || birth > reference) return null;
+  let age = reference.getFullYear() - birth.getFullYear();
+  const monthDiff = reference.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && reference.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+function isAgeInRange(iso, minAge, maxAge) {
+  const age = ageFromBirthDate(iso);
+  return age !== null && age >= minAge && age <= maxAge;
+}
+
+function dateForAge(age) {
+  return toISO(addYears(new Date(), -age));
+}
+
+function minBirthDateForMaxAge(maxAge) {
+  const date = addYears(new Date(), -(maxAge + 1));
+  date.setDate(date.getDate() + 1);
+  return toISO(date);
+}
+
 /* ── Aleatoriedad determinista ── */
 function mulberry32(seed) {
   return function () {
