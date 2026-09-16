@@ -1,10 +1,5 @@
 /* js/auth.js — login de maestra y familias */
 
-const TEACHER_ACCOUNTS = [
-  { user: "JARET AMPARO", pass: "jaret123", name: "Jaret" },
-  { user: "JASS", pass: "jass123", name: "Jass" }
-];
-
 let parentSession = null;
 
 function saveSession(session) {
@@ -31,6 +26,7 @@ function logout() {
   $("#teacherUser").value = "";
   $("#teacherPass").value = "";
   $("#teacherError").textContent = "";
+  $("#teacherRegError").textContent = "";
   $("#pLoginEmail").value = "";
   $("#pLoginPass").value = "";
   $("#parentLoginError").textContent = "";
@@ -41,9 +37,11 @@ function handleTeacherLogin(e) {
   e.preventDefault();
   const user = $("#teacherUser").value.trim().toUpperCase();
   const pass = $("#teacherPass").value;
-  const account = TEACHER_ACCOUNTS.find(item => item.user === user && item.pass === pass);
+  const account = db.teachers.find(item => item.user === user && item.password === pass);
   if (account) {
-    saveSession({ role: "teacher", user: account.user, name: account.name });
+    saveSession({ role: "teacher", id: account.id, user: account.user, name: account.name });
+    db.settings.teacherName = account.name;
+    saveData();
     $("#teacherError").textContent = "";
     showScreen("teacher");
     renderAll();
@@ -52,6 +50,30 @@ function handleTeacherLogin(e) {
     $("#teacherError").textContent = "Usuario o contraseña incorrectos 💔";
     $("#teacherPass").value = "";
   }
+}
+
+function handleTeacherRegister(e) {
+  e.preventDefault();
+  const error = $("#teacherRegError");
+  const name = $("#newTeacherName").value.trim();
+  const user = $("#newTeacherUser").value.trim().toUpperCase();
+  const pass = $("#newTeacherPass").value;
+
+  if (!name || !user || !pass) { error.textContent = "Completa todos los campos."; return; }
+  if (pass.length < 4) { error.textContent = "La contraseña debe tener al menos 4 caracteres."; return; }
+  if (db.teachers.some(t => t.user === user)) { error.textContent = "Ese usuario ya existe."; return; }
+
+  const teacher = { id: uid(), name, user, password: pass, createdAt: todayISO() };
+  db.teachers.push(teacher);
+  db.settings.teacherName = name;
+  saveData();
+
+  saveSession({ role: "teacher", id: teacher.id, user: teacher.user, name: teacher.name });
+  error.textContent = "";
+  $("#teacherRegisterForm").reset();
+  showScreen("teacher");
+  renderAll();
+  showToast(`¡Profesora ${teacher.name} creada! 🌸`);
 }
 
 /* ── Registro de familias ── */
@@ -131,13 +153,26 @@ document.addEventListener("DOMContentLoaded", () => {
       $$(".login-tab").forEach(t => t.classList.toggle("active", t === tab));
       const isTeacher = tab.dataset.role === "teacher";
       $("#teacherForm").classList.toggle("hidden", !isTeacher);
+      $("#teacherRegisterForm").classList.add("hidden");
       $("#parentAuth").classList.toggle("hidden", isTeacher);
     });
   });
 
   $("#teacherForm").addEventListener("submit", handleTeacherLogin);
+  $("#teacherRegisterForm").addEventListener("submit", handleTeacherRegister);
   $("#parentLoginForm").addEventListener("submit", handleParentLogin);
   $("#parentRegisterForm").addEventListener("submit", handleParentRegister);
+
+  $("#showTeacherRegister").addEventListener("click", () => {
+    $("#teacherForm").classList.add("hidden");
+    $("#teacherRegisterForm").classList.remove("hidden");
+    $("#teacherRegError").textContent = "";
+  });
+  $("#showTeacherLogin").addEventListener("click", () => {
+    $("#teacherRegisterForm").classList.add("hidden");
+    $("#teacherForm").classList.remove("hidden");
+    $("#teacherRegError").textContent = "";
+  });
 
   $("#showRegister").addEventListener("click", () => {
     $("#parentLoginForm").classList.add("hidden");
@@ -163,6 +198,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Restaurar sesión */
   const session = getSession();
   if (session && session.role === "teacher") {
+    const teacher = db.teachers.find(t => t.id === session.id || t.user === session.user);
+    if (teacher) {
+      db.settings.teacherName = teacher.name;
+      saveData();
+    }
     showScreen("teacher");
   } else if (session && session.role === "parent") {
     const parent = db.parents.find(p => p.id === session.id);

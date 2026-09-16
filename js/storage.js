@@ -117,6 +117,10 @@ const defaultData = {
   evaluations: [],
   incidents: [],
   parents: [],
+  teachers: [
+    { id: "teacher-demo-jaret", user: "JARET AMPARO", password: "jaret123", name: "Jaret Amparo", createdAt: "demo" },
+    { id: "teacher-demo-jass", user: "JASS", password: "jass123", name: "Jass", createdAt: "demo" }
+  ],
   settings: {
     teacherName: "Jaret Amparo",
     schoolName: "I.E. Los Pequeños",
@@ -244,6 +248,7 @@ function createSeedData() {
     evaluations,
     incidents,
     parents: [],
+    teachers: defaultData.teachers.map(t => ({ ...t })),
     settings: { ...defaultData.settings }
   };
 }
@@ -271,7 +276,7 @@ function saveData() {
 }
 
 function resetData() {
-  db = { ...defaultData, students: [], attendance: [], evaluations: [], incidents: [], parents: [] };
+  db = { ...defaultData, students: [], attendance: [], evaluations: [], incidents: [], parents: [], teachers: defaultData.teachers.map(t => ({ ...t })) };
   saveData();
 }
 

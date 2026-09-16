@@ -50,6 +50,22 @@
       <p class="login-error" id="teacherError"></p>
       <button type="submit" class="primary-btn big w100">Entrar 🌸</button>
       <p class="login-hint">Demo: <strong>JARET AMPARO</strong> · <strong>jaret123</strong> / <strong>Jass</strong> · <strong>jass123</strong></p>
+      <button type="button" id="showTeacherRegister" class="link-btn">Crear usuario de profesora</button>
+    </form>
+
+    <form id="teacherRegisterForm" class="login-form hidden">
+      <label class="fld"><span>Nombre completo</span>
+        <input id="newTeacherName" placeholder="Ej. Rosa Quispe">
+      </label>
+      <label class="fld"><span>Usuario</span>
+        <input id="newTeacherUser" autocomplete="username" placeholder="Ej. PROFESORA ROSA">
+      </label>
+      <label class="fld"><span>Contraseña</span>
+        <input id="newTeacherPass" type="password" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+      </label>
+      <p class="login-error" id="teacherRegError"></p>
+      <button type="submit" class="primary-btn big w100">Crear profesora 🌷</button>
+      <button type="button" id="showTeacherLogin" class="link-btn">Ya tengo usuario</button>
     </form>
 
     <!-- Familia -->
