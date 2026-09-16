@@ -1,7 +1,9 @@
 /* js/auth.js — login de maestra y familias */
 
-const TEACHER_USER = "JARET AMPARO";
-const TEACHER_PASS = "jaret123";
+const TEACHER_ACCOUNTS = [
+  { user: "JARET AMPARO", pass: "jaret123", name: "Jaret" },
+  { user: "JASS", pass: "jass123", name: "Jass" }
+];
 
 let parentSession = null;
 
@@ -39,13 +41,14 @@ function handleTeacherLogin(e) {
   e.preventDefault();
   const user = $("#teacherUser").value.trim().toUpperCase();
   const pass = $("#teacherPass").value;
-  if (user === TEACHER_USER && pass === TEACHER_PASS) {
-    saveSession({ role: "teacher" });
+  const account = TEACHER_ACCOUNTS.find(item => item.user === user && item.pass === pass);
+  if (account) {
+    saveSession({ role: "teacher", user: account.user, name: account.name });
     $("#teacherError").textContent = "";
     showScreen("teacher");
     renderAll();
-    showToast("¡Bienvenida, maestra Jaret! 🌸");
-  } else {
+    showToast(`¡Bienvenida, maestra ${account.name}! 🌸`);
+  } else {  
     $("#teacherError").textContent = "Usuario o contraseña incorrectos 💔";
     $("#teacherPass").value = "";
   }
