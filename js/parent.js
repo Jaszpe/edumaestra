@@ -191,6 +191,4 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshNewsVisibility(parentSession.id);
     $("#newsBox").scrollIntoView({ behavior: "smooth", block: "start" });
   });
-
-  $("#printParentReport").addEventListener("click", () => window.print());
 });

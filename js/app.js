@@ -6,7 +6,7 @@ const sectionInfo = {
   asistencia: ["Asistencia", "Control diario de asistencia y tardanzas"],
   evaluaciones: ["Evaluaciones", "Competencias, criterios y calificaciones"],
   incidencias: ["Incidencias", "Registro de situaciones y observaciones"],
-  reportes: ["Reportes", "Resumen y exportación de información"],
+  reportes: ["Reportes", "Resumen de asistencia y registros"],
   configuracion: ["Configuración", "Personaliza EduMaestra"]
 };
 
@@ -406,6 +406,59 @@ function renderDashboard() {
   $("#reportRate").textContent = rate + "%";
 }
 
+function renderAreaReport() {
+  const students = filteredStudents();
+  const studentIds = new Set(students.map(s => s.id));
+  const evaluations = db.evaluations.filter(e => classroomFilter === "Todos" || studentIds.has(e.studentId));
+  const scope = classroomFilter === "Todos" ? "Todos los salones" : `Salón ${classroomFilter}`;
+  const scoreByLevel = { AD: 100, A: 80, B: 55, C: 30 };
+
+  $("#areaReportScope").textContent = scope;
+
+  if (!evaluations.length) {
+    $("#areaInsight").innerHTML = `<div class="empty-state">Todavía no hay evaluaciones para este filtro.</div>`;
+    $("#areaBars").innerHTML = "";
+    return;
+  }
+
+  const rows = AREAS.map(area => {
+    const areaEvals = evaluations.filter(e => e.area === area);
+    const total = areaEvals.length;
+    const average = total
+      ? Math.round(areaEvals.reduce((sum, e) => sum + (scoreByLevel[e.level] || 0), 0) / total)
+      : 0;
+    const needsSupport = areaEvals.filter(e => e.level === "B" || e.level === "C").length;
+    return { area, total, average, needsSupport };
+  });
+
+  const withData = rows.filter(row => row.total > 0);
+  const weakest = withData.slice().sort((a, b) => a.average - b.average || b.needsSupport - a.needsSupport)[0];
+  const strongest = withData.slice().sort((a, b) => b.average - a.average)[0];
+
+  $("#areaInsight").innerHTML = weakest
+    ? `<div class="mini-list">
+        <div class="mini-item">
+          <span class="mi-emoji">🔎</span>
+          <div class="mi-body"><strong>Área para observar: ${escapeHTML(weakest.area)}</strong><small>${weakest.average}% de avance promedio · ${weakest.needsSupport} registro(s) en B/C</small></div>
+        </div>
+        <div class="mini-item">
+          <span class="mi-emoji">🌟</span>
+          <div class="mi-body"><strong>Área más fuerte: ${escapeHTML(strongest.area)}</strong><small>${strongest.average}% de avance promedio</small></div>
+        </div>
+      </div>`
+    : `<div class="empty-state">Todavía no hay evaluaciones por área.</div>`;
+
+  $("#areaBars").innerHTML = rows.map(row => {
+    const color = row.average >= 80 ? "mint" : row.average >= 60 ? "lav" : row.average >= 40 ? "sun" : "pink";
+    const detail = row.total ? `${row.total} evaluación(es) · ${row.needsSupport} en B/C` : "Sin evaluaciones";
+    return `<div class="bar-row">
+      <div class="bar-top"><span>${escapeHTML(row.area)}</span><span>${row.average}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${color}" style="width:${row.average}%"></div></div>
+      <small class="muted">${detail}</small>
+    </div>`;
+  }).join("");
+}
+
 /* ── Configuración ── */
 function renderSettings() {
   $("#teacherName").value = db.settings.teacherName || "";
@@ -421,41 +474,8 @@ function renderAll() {
   renderAttendance();
   renderEvaluations();
   renderIncidents();
+  renderAreaReport();
   renderSettings();
-}
-
-/* ── Exportaciones ── */
-function exportStudentsCSV() {
-  const header = ["Nombres", "Apellidos", "Salón", "Fecha nacimiento", "Apoderado", "Teléfono"];
-  const rows = db.students.map(s => [s.firstName, s.lastName, s.classroom, s.birthDate, s.guardian, s.phone]);
-  const csv = [header, ...rows]
-    .map(row => row.map(v => `"${String(v ?? "").replaceAll('"', '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `edumaestra_estudiantes_${todayISO()}.csv`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast("CSV exportado 📊");
-}
-
-function exportEvaluationsCSV() {
-  const header = ["Fecha", "Estudiante", "Salón", "Área", "Criterio", "Nivel"];
-  const rows = db.evaluations.map(e => {
-    const s = studentById(e.studentId);
-    return [e.date, studentName(e.studentId), s?.classroom || "", e.area, e.criterion, e.level];
-  });
-  const csv = [header, ...rows]
-    .map(row => row.map(v => `"${String(v ?? "").replaceAll('"', '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `edumaestra_evaluaciones_${todayISO()}.csv`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast("CSV exportado 📝");
 }
 
 /* ── Arranque del panel maestra ── */
@@ -518,14 +538,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Evaluaciones e incidencias */
   $("#newEvaluationBtn").onclick = addEvaluation;
   $("#newIncidentBtn").onclick = addIncident;
-
-  /* Respaldos */
-  $("#exportBackup").onclick = exportBackup;
-  $("#exportBackup2").onclick = exportBackup;
-  $("#exportStudentsCsv").onclick = exportStudentsCSV;
-  $("#exportEvaluationsCsv").onclick = exportEvaluationsCSV;
-  $("#printReport").onclick = () => window.print();
-  $("#importBackup").onchange = e => e.target.files[0] && importBackup(e.target.files[0]);
 
   /* Configuración */
   $("#saveSettings").onclick = () => {

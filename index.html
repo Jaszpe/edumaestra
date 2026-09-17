@@ -140,8 +140,6 @@
         <span>👩‍🏫</span>
         <div><strong id="teacherChipName">Jaret Amparo</strong><small id="schoolChipName">Docente</small></div>
       </div>
-      <button id="exportBackup" class="secondary-btn">💾 Respaldar datos</button>
-      <label class="secondary-btn file-btn">📂 Restaurar<input type="file" id="importBackup" accept=".json" hidden></label>
       <button id="logoutTeacher" class="secondary-btn ghost">🚪 Cerrar sesión</button>
     </div>
   </aside>
@@ -286,14 +284,13 @@
           <article class="stat-card c-lav"><span>📈</span><div><small>% Asistencia</small><strong id="reportRate">0%</strong></div></article>
         </div>
         <article class="panel">
-          <div class="panel-header"><h3>Exportación</h3></div>
-          <p class="muted">Descarga la información de tus estudiantes y respalda todo tu trabajo.</p>
-          <div class="quick-actions">
-            <button id="exportStudentsCsv">📊 Exportar estudiantes CSV</button>
-            <button id="exportBackup2">💾 Exportar respaldo JSON</button>
-            <button id="printReport">🖨️ Imprimir reporte</button>
-            <button id="exportEvaluationsCsv">📝 Exportar evaluaciones CSV</button>
-          </div>
+          <div class="panel-header"><h3>Resumen general</h3></div>
+          <p class="muted">Consulta la asistencia y el avance registrado desde este panel.</p>
+        </article>
+        <article class="panel">
+          <div class="panel-header"><h3>Avance por áreas</h3><span id="areaReportScope" class="muted"></span></div>
+          <div id="areaInsight" class="empty-state">Cargando…</div>
+          <div id="areaBars" class="bars"></div>
         </article>
       </section>
 
@@ -411,8 +408,6 @@
       <article class="panel">
         <div class="panel-header"><h3>📈 Resumen de asistencia</h3></div>
         <div id="pAttBars" class="bars"></div>
-        <hr>
-        <button id="printParentReport" class="primary-btn">🖨️ Imprimir reporte</button>
       </article>
     </section>
 

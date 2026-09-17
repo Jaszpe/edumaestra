@@ -14,7 +14,6 @@ Construida con HTML, CSS y JavaScript puro. Sin backend y sin base de datos.
 - 📝 Evaluaciones por área con niveles AD / A / B / C.
 - ⚠️ Registro de incidencias.
 - 📊 Reportes con porcentajes y barras animadas.
-- 💾 Respaldo y restauración en JSON + exportación CSV.
 - 🎉 Animaciones, confeti y microinteracciones.
 
 ## 📁 Estructura
@@ -71,14 +70,12 @@ o usa cualquier servidor estático.
 ## ⚠️ Importante sobre los datos
 
 EduMaestra usa `localStorage`. Los datos viven en **el navegador**, no en GitHub.
-Si cambias de dispositivo o borras el almacenamiento, usa **Respaldar datos** y
-luego **Restaurar** en el nuevo navegador.
+Los datos se guardan en el navegador donde se usa la aplicación.
 
 Las cuentas de familias también se guardan en `localStorage` de ese mismo navegador.
 
 ## 🔮 Próximas fases
 
-- Importar/exportar Excel `.xlsx`.
 - Generación de PDF por estudiante.
 - Gráficos de progreso por competencia.
 - Conclusiones descriptivas por nivel.

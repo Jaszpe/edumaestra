@@ -285,36 +285,6 @@ function regenerateDemo() {
   saveData();
 }
 
-function downloadJSON(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportBackup() {
-  downloadJSON(`edumaestra_backup_${todayISO()}.json`, db);
-}
-
-function importBackup(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const imported = JSON.parse(reader.result);
-      if (!imported || !Array.isArray(imported.students)) throw new Error("Formato inválido");
-      db = { ...defaultData, ...imported, seeded: true };
-      saveData();
-      location.reload();
-    } catch (e) {
-      alert("El archivo no parece ser un respaldo válido de EduMaestra.");
-    }
-  };
-  reader.readAsText(file);
-}
-
 /* ── Búsquedas ── */
 function studentName(id) {
   const s = db.students.find(x => x.id === id);
