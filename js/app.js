@@ -462,6 +462,8 @@ function renderAreaReport() {
       </div>`
     : `<div class="empty-state">Todavía no hay evaluaciones por área.</div>`;
 
+  const gridMode = reportClassroomFilter === "Todos" ? "all" : "single";
+  $("#classroomAreaReports").className = `classroom-report-grid ${gridMode}`;
   $("#classroomAreaReports").innerHTML = reports.map(report => {
     if (!report.totalEvaluations) {
       return `<article class="classroom-report-card">
