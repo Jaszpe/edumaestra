@@ -11,6 +11,7 @@ const sectionInfo = {
 };
 
 let classroomFilter = "Todos";
+let reportClassroomFilter = "Todos";
 let currentSection = "inicio";
 
 /* ── Utilidades UI ── */
@@ -414,8 +415,10 @@ function renderAreaReport() {
     "Personal Social": "#b9a7ff",
     "Ciencia y Tecnología": "#ffc86b"
   };
-  const rooms = classroomFilter === "Todos" ? CLASSROOMS : [classroomFilter];
-  const scope = classroomFilter === "Todos" ? "Todos los salones" : `Salón ${classroomFilter}`;
+  const reportSelect = $("#reportClassroom");
+  if (reportSelect && reportSelect.value !== reportClassroomFilter) reportSelect.value = reportClassroomFilter;
+  const rooms = reportClassroomFilter === "Todos" ? CLASSROOMS : [reportClassroomFilter];
+  const scope = reportClassroomFilter === "Todos" ? "Todos los salones" : `Salón ${reportClassroomFilter}`;
 
   $("#areaReportScope").textContent = scope;
 
@@ -576,6 +579,10 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Evaluaciones e incidencias */
   $("#newEvaluationBtn").onclick = addEvaluation;
   $("#newIncidentBtn").onclick = addIncident;
+  $("#reportClassroom").onchange = () => {
+    reportClassroomFilter = $("#reportClassroom").value;
+    renderAreaReport();
+  };
 
   /* Configuración */
   $("#saveSettings").onclick = () => {

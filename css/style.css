@@ -398,6 +398,8 @@ hr{border:0;border-top:2px dashed var(--border);margin:24px 0;}
 .bar-fill.sun{background:linear-gradient(90deg,#ffdd9e,#ffb347);}
 
 /* Reportes por salón */
+.report-filter{max-width:280px;margin:0 0 18px;}
+.report-filter select{background:#fff;border-color:var(--primary-soft);font-weight:700;color:var(--primary-dark);}
 .classroom-report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .classroom-report-card{
   border:2px solid var(--border);border-radius:20px;background:#fffafc;

@@ -285,6 +285,15 @@
         </div>
         <article class="panel">
           <div class="panel-header"><h3>Avance por áreas y salones</h3><span id="areaReportScope" class="muted"></span></div>
+          <div class="report-filter">
+            <label class="field-label" for="reportClassroom">Vista de reportes</label>
+            <select id="reportClassroom">
+              <option value="Todos">Todos los salones</option>
+              <option value="3 años">Salón 3 años</option>
+              <option value="4 años">Salón 4 años</option>
+              <option value="5 años">Salón 5 años</option>
+            </select>
+          </div>
           <div id="areaInsight" class="empty-state">Cargando…</div>
           <div id="classroomAreaReports" class="classroom-report-grid"></div>
         </article>
@@ -421,9 +430,9 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="js/storage.js?v=20260918-areas"></script>
-<script src="js/auth.js?v=20260918-areas"></script>
-<script src="js/app.js?v=20260918-areas"></script>
-<script src="js/parent.js?v=20260918-areas"></script>
+<script src="js/storage.js?v=20260918-report-filter"></script>
+<script src="js/auth.js?v=20260918-report-filter"></script>
+<script src="js/app.js?v=20260918-report-filter"></script>
+<script src="js/parent.js?v=20260918-report-filter"></script>
 </body>
 </html>
