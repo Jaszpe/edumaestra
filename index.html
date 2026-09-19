@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260918-areas">
 </head>
 <body>
 
@@ -284,13 +284,9 @@
           <article class="stat-card c-lav"><span>📈</span><div><small>% Asistencia</small><strong id="reportRate">0%</strong></div></article>
         </div>
         <article class="panel">
-          <div class="panel-header"><h3>Resumen general</h3></div>
-          <p class="muted">Consulta la asistencia y el avance registrado desde este panel.</p>
-        </article>
-        <article class="panel">
-          <div class="panel-header"><h3>Avance por áreas</h3><span id="areaReportScope" class="muted"></span></div>
+          <div class="panel-header"><h3>Avance por áreas y salones</h3><span id="areaReportScope" class="muted"></span></div>
           <div id="areaInsight" class="empty-state">Cargando…</div>
-          <div id="areaBars" class="bars"></div>
+          <div id="classroomAreaReports" class="classroom-report-grid"></div>
         </article>
       </section>
 
@@ -425,9 +421,9 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="js/storage.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/app.js"></script>
-<script src="js/parent.js"></script>
+<script src="js/storage.js?v=20260918-areas"></script>
+<script src="js/auth.js?v=20260918-areas"></script>
+<script src="js/app.js?v=20260918-areas"></script>
+<script src="js/parent.js?v=20260918-areas"></script>
 </body>
 </html>

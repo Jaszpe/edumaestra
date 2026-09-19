@@ -407,55 +407,93 @@ function renderDashboard() {
 }
 
 function renderAreaReport() {
-  const students = filteredStudents();
-  const studentIds = new Set(students.map(s => s.id));
-  const evaluations = db.evaluations.filter(e => classroomFilter === "Todos" || studentIds.has(e.studentId));
-  const scope = classroomFilter === "Todos" ? "Todos los salones" : `Salón ${classroomFilter}`;
   const scoreByLevel = { AD: 100, A: 80, B: 55, C: 30 };
+  const areaColors = {
+    "Comunicación": "#ff6fa5",
+    "Matemática": "#7fd8c9",
+    "Personal Social": "#b9a7ff",
+    "Ciencia y Tecnología": "#ffc86b"
+  };
+  const rooms = classroomFilter === "Todos" ? CLASSROOMS : [classroomFilter];
+  const scope = classroomFilter === "Todos" ? "Todos los salones" : `Salón ${classroomFilter}`;
 
   $("#areaReportScope").textContent = scope;
 
-  if (!evaluations.length) {
+  const reports = rooms.map(room => {
+    const roomStudents = db.students.filter(s => s.classroom === room);
+    const roomStudentIds = new Set(roomStudents.map(s => s.id));
+    const roomEvaluations = db.evaluations.filter(e => roomStudentIds.has(e.studentId));
+    const areas = AREAS.map(area => {
+      const areaEvals = roomEvaluations.filter(e => e.area === area);
+      const total = areaEvals.length;
+      const average = total
+        ? Math.round(areaEvals.reduce((sum, e) => sum + (scoreByLevel[e.level] || 0), 0) / total)
+        : 0;
+      const needsSupport = areaEvals.filter(e => e.level === "B" || e.level === "C").length;
+      return { area, total, average, needsSupport, color: areaColors[area] };
+    });
+    const withData = areas.filter(row => row.total > 0);
+    const strongest = withData.slice().sort((a, b) => b.average - a.average)[0];
+    const weakest = withData.slice().sort((a, b) => a.average - b.average || b.needsSupport - a.needsSupport)[0];
+    return { room, totalStudents: roomStudents.length, totalEvaluations: roomEvaluations.length, areas, strongest, weakest };
+  });
+
+  const reportsWithData = reports.filter(report => report.totalEvaluations > 0);
+
+  if (!reportsWithData.length) {
     $("#areaInsight").innerHTML = `<div class="empty-state">Todavía no hay evaluaciones para este filtro.</div>`;
-    $("#areaBars").innerHTML = "";
+    $("#classroomAreaReports").innerHTML = "";
     return;
   }
 
-  const rows = AREAS.map(area => {
-    const areaEvals = evaluations.filter(e => e.area === area);
-    const total = areaEvals.length;
-    const average = total
-      ? Math.round(areaEvals.reduce((sum, e) => sum + (scoreByLevel[e.level] || 0), 0) / total)
-      : 0;
-    const needsSupport = areaEvals.filter(e => e.level === "B" || e.level === "C").length;
-    return { area, total, average, needsSupport };
-  });
+  const lowestRoom = reportsWithData
+    .filter(report => report.weakest)
+    .sort((a, b) => a.weakest.average - b.weakest.average)[0];
 
-  const withData = rows.filter(row => row.total > 0);
-  const weakest = withData.slice().sort((a, b) => a.average - b.average || b.needsSupport - a.needsSupport)[0];
-  const strongest = withData.slice().sort((a, b) => b.average - a.average)[0];
-
-  $("#areaInsight").innerHTML = weakest
+  $("#areaInsight").innerHTML = lowestRoom
     ? `<div class="mini-list">
         <div class="mini-item">
           <span class="mi-emoji">🔎</span>
-          <div class="mi-body"><strong>Área para observar: ${escapeHTML(weakest.area)}</strong><small>${weakest.average}% de avance promedio · ${weakest.needsSupport} registro(s) en B/C</small></div>
-        </div>
-        <div class="mini-item">
-          <span class="mi-emoji">🌟</span>
-          <div class="mi-body"><strong>Área más fuerte: ${escapeHTML(strongest.area)}</strong><small>${strongest.average}% de avance promedio</small></div>
+          <div class="mi-body"><strong>Prioridad: ${escapeHTML(lowestRoom.room)} · ${escapeHTML(lowestRoom.weakest.area)}</strong><small>${lowestRoom.weakest.average}% de avance promedio · ${lowestRoom.weakest.needsSupport} registro(s) en B/C</small></div>
         </div>
       </div>`
     : `<div class="empty-state">Todavía no hay evaluaciones por área.</div>`;
 
-  $("#areaBars").innerHTML = rows.map(row => {
-    const color = row.average >= 80 ? "mint" : row.average >= 60 ? "lav" : row.average >= 40 ? "sun" : "pink";
-    const detail = row.total ? `${row.total} evaluación(es) · ${row.needsSupport} en B/C` : "Sin evaluaciones";
-    return `<div class="bar-row">
-      <div class="bar-top"><span>${escapeHTML(row.area)}</span><span>${row.average}%</span></div>
-      <div class="bar-track"><div class="bar-fill ${color}" style="width:${row.average}%"></div></div>
-      <small class="muted">${detail}</small>
-    </div>`;
+  $("#classroomAreaReports").innerHTML = reports.map(report => {
+    if (!report.totalEvaluations) {
+      return `<article class="classroom-report-card">
+        <div class="classroom-report-head"><h4>${escapeHTML(report.room)}</h4><span>${report.totalStudents} estudiantes</span></div>
+        <div class="empty-state compact">Sin evaluaciones registradas.</div>
+      </article>`;
+    }
+
+    const totalScore = report.areas.reduce((sum, row) => sum + row.average, 0) || 1;
+    let start = 0;
+    const slices = report.areas.map(row => {
+      const size = Math.max(0, (row.average / totalScore) * 100);
+      const end = start + size;
+      const slice = `${row.color} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+      start = end;
+      return slice;
+    }).join(", ");
+
+    return `<article class="classroom-report-card">
+      <div class="classroom-report-head"><h4>${escapeHTML(report.room)}</h4><span>${report.totalStudents} estudiantes · ${report.totalEvaluations} evaluaciones</span></div>
+      <div class="classroom-report-body">
+        <div class="pie-chart" style="background:conic-gradient(${slices});">
+          <span>${Math.round(report.areas.reduce((sum, row) => sum + row.average, 0) / report.areas.length)}%</span>
+        </div>
+        <div class="area-summary">
+          <strong>Mejor área: ${escapeHTML(report.strongest.area)}</strong>
+          <small>${report.strongest.average}% de avance promedio</small>
+          <strong>Área a reforzar: ${escapeHTML(report.weakest.area)}</strong>
+          <small>${report.weakest.average}% de avance promedio · ${report.weakest.needsSupport} en B/C</small>
+        </div>
+      </div>
+      <div class="pie-legend">
+        ${report.areas.map(row => `<div><span style="background:${row.color}"></span><p>${escapeHTML(row.area)} <strong>${row.average}%</strong><small>${row.total} eval.</small></p></div>`).join("")}
+      </div>
+    </article>`;
   }).join("");
 }
 
